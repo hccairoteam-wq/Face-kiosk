@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Face Kiosk</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0/dist/tf.min.js"></script>
+  <script src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <style>
+    html,body{height:100%;margin:0;background:#000}
+    #video{width:100%;height:100%;object-fit:cover}
+    #notice{position:absolute;left:10px;top:10px;color:#fff;background:rgba(0,0,0,0.35);padding:6px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div id="notice">Ready — look at the camera</div>
+  <video id="video" autoplay muted playsinline></video>
+  <script src="app.js"></script>
+</body>
+</html>
