@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Enroll Faces</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0/dist/tf.min.js"></script>
+<script src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<style>
+  html,body{height:100%;margin:0;background:#000;color:#fff;font-family:sans-serif;}
+  #video{width:100%;height:50%;object-fit:cover;}
+  #controls{padding:10px;}
+  input,button{margin:5px;padding:5px;font-size:16px;}
+</style>
+</head>
+<body>
+<video id="video" autoplay muted playsinline></video>
+<div id="controls">
+  <input type="text" id="name" placeholder="Employee Name">
+  <button id="capture">Capture Face</button>
+  <button id="download">Download JSON</button>
+</div>
+<script>
+let labeledDescriptors = [];
+const video = document.getElementById('video');
+const nameInput = document.getElementById('name');
+
+async function loadModels(){
+  await faceapi.nets.tinyFaceDetector.loadFromUri('./models');
+  await faceapi.nets.faceLandmark68Net.loadFromUri('./models');
+  await faceapi.nets.faceRecognitionNet.loadFromUri('./models');
+}
+async function startVideo(){
+  const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user' } });
+  video.srcObject = s;
+}
+
+document.getElementById('capture').onclick = async () => {
+  const name = nameInput.value.trim();
+  if(!name) { alert('Enter name'); return; }
+  const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+  if(!detection){ alert('No face detected'); return; }
+  // Check if name exists
+  let person = labeledDescriptors.find(p => p.label === name);
+  if(!person){ person = { label:name, descriptors:[] }; labeledDescriptors.push(person);}
+  person.descriptors.push(Array.from(detection.descriptor));
+  alert('Captured ' + name + ', total descriptors: ' + person.descriptors.length);
+}
+
+document.getElementById('download').onclick = () => {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(labeledDescriptors));
+  const a = document.createElement('a');
+  a.href = dataStr;
+  a.download = 'labeled_descriptors.json';
+  a.click();
+}
+
+loadModels().then(startVideo);
+</script>
+</body>
+</html>
